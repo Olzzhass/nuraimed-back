@@ -1,0 +1,13 @@
+version: '3'
+services:
+  nuraimed-db:
+    image: postgres:15
+    container_name: nuraimed-db
+    environment:
+      POSTGRES_DB: nuraimed-db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - '5433:5432'
