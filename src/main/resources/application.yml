@@ -1,10 +1,16 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
   application:
     name: nuraimed-back
   datasource:
     url: jdbc:postgresql://localhost:5433/nuraimed-db
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  liquibase:
+    change-log: db/changelog/changelog-master.yml
   jpa:
     show-sql: true
     properties:
