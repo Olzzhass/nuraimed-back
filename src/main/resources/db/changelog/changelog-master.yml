@@ -5,3 +5,7 @@ databaseChangeLog:
       file: db/changelog/v1.0/02-create-table-doctor-translations.sql
   - include:
       file: db/changelog/v1.0/03-create-table-reviews.sql
+  - include:
+      file: db/changelog/v1.0/04-create-table-direction.sql
+  - include:
+      file: db/changelog/v1.0/05-create-table-direction-translations.sql
