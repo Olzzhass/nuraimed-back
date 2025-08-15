@@ -2,9 +2,11 @@ package kz.med.nuraimedback.service;
 
 import kz.med.nuraimedback.model.dto.DirectionRequestDto;
 import kz.med.nuraimedback.model.dto.DirectionResponseDto;
+import kz.med.nuraimedback.model.dto.DirectionNamesResponseDto;
 import org.springframework.data.domain.Page;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface DirectionService {
 
@@ -18,4 +20,5 @@ public interface DirectionService {
 
     void deleteDirection(Long id);
     
+    List<DirectionNamesResponseDto> getAllNamesForNavbar(String languageCode);
 }

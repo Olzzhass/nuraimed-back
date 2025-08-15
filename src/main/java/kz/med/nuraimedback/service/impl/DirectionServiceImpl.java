@@ -7,9 +7,9 @@ import kz.med.nuraimedback.model.DirectionTranslation;
 import kz.med.nuraimedback.model.dto.DirectionRequestDto;
 import kz.med.nuraimedback.model.dto.DirectionResponseDto;
 import kz.med.nuraimedback.model.dto.DirectionTranslationDto;
+import kz.med.nuraimedback.model.dto.DirectionNamesResponseDto;
 import kz.med.nuraimedback.repository.DirectionRepository;
 import kz.med.nuraimedback.repository.DirectionTranslationRepository;
-import kz.med.nuraimedback.service.DirectionService;
 import kz.med.nuraimedback.service.DirectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class DirectionServiceImpl implements DirectionService {
 
-    private final DirectionRepository DirectionRepository;
+    private final DirectionRepository directionRepository;
     private final DirectionTranslationRepository translationRepository;
     private final DirectionMapper mapper;
 
@@ -39,7 +39,7 @@ public class DirectionServiceImpl implements DirectionService {
             Direction.setDirectionImage(dto.getDirectionImage().getBytes());
         }
 
-        Direction savedDirection = DirectionRepository.save(Direction);
+        Direction savedDirection = directionRepository.save(Direction);
 
         List<DirectionTranslation> translations = dto.getTranslations().stream()
                 .map(t -> new DirectionTranslation(null, savedDirection, t.getLanguageCode(), t.getTitle(), t.getDescription(), t.getOfferDetails()))
@@ -53,7 +53,7 @@ public class DirectionServiceImpl implements DirectionService {
 
     @Override
     public DirectionResponseDto getDirection(Long id) {
-        Direction Direction = DirectionRepository.findById(id)
+        Direction Direction = directionRepository.findById(id)
                 .orElseThrow(() -> new DirectionNotFoundException("Direction not found"));
         return mapper.toDto(Direction);
     }
@@ -61,7 +61,7 @@ public class DirectionServiceImpl implements DirectionService {
     @Override
     public Page<DirectionResponseDto> getAllDirections(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Direction> DirectionPage = DirectionRepository.findAll(pageable);
+        Page<Direction> DirectionPage = directionRepository.findAll(pageable);
 
         return DirectionPage.map(mapper::toDto);
     }
@@ -69,7 +69,7 @@ public class DirectionServiceImpl implements DirectionService {
     @Override
     @Transactional
     public DirectionResponseDto updateDirection(Long id, DirectionRequestDto dto) throws IOException {
-        Direction Direction = DirectionRepository.findById(id)
+        Direction Direction = directionRepository.findById(id)
                 .orElseThrow(() -> new DirectionNotFoundException("Direction not found"));
 
         if (dto.getDirectionImage() != null && !dto.getDirectionImage().isEmpty()) {
@@ -98,7 +98,7 @@ public class DirectionServiceImpl implements DirectionService {
             }
         }
 
-        DirectionRepository.save(Direction);
+        directionRepository.save(Direction);
         return mapper.toDto(Direction);
     }
 
@@ -106,9 +106,29 @@ public class DirectionServiceImpl implements DirectionService {
     @Override
     @Transactional
     public void deleteDirection(Long id) {
-        if (!DirectionRepository.existsById(id)) {
+        if (!directionRepository.existsById(id)) {
             throw new DirectionNotFoundException("Direction not found");
         }
-        DirectionRepository.deleteById(id);
+        directionRepository.deleteById(id);
+    }
+
+    @Override
+    public List<DirectionNamesResponseDto> getAllNamesForNavbar(String languageCode) {
+        if (languageCode == null || languageCode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Language code cannot be null or empty");
+        }
+
+        try {
+            List<DirectionNamesResponseDto> result = directionRepository.findDirectionsNameByLanguageCode(languageCode.trim());
+
+            // Если для указанного языка нет переводов, возвращаем переводы на русском как fallback
+            if (result.isEmpty() && !"ru".equalsIgnoreCase(languageCode)) {
+                result = directionRepository.findDirectionsNameByLanguageCode("ru");
+            }
+
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving direction names for language: " + languageCode, e);
+        }
     }
 }

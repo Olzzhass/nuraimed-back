@@ -12,5 +12,6 @@ public class DoctorTranslationDto {
     private String description;
     private String education;
     private String experience;
+    private String serviceRecord;
     private String specialization;
 }

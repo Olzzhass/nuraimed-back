@@ -5,7 +5,8 @@ CREATE TABLE doctor_translations
     language_code  VARCHAR(2) NOT NULL, -- 'kk', 'ru'
     description    TEXT,                -- "О враче"
     education      TEXT,                -- "Образование"
-    experience     TEXT,                -- "Стаж"
+    experience     TEXT,                -- "Опыт работы"
+    service_record TEXT,                -- "Стаж"
     specialization TEXT,                -- "Специализация: Уролог, Неврапотолог и так далее"
     UNIQUE (doctor_id, language_code)
 );
