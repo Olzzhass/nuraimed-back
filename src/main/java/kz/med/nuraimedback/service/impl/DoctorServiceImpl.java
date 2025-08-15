@@ -41,7 +41,7 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor savedDoctor = doctorRepository.save(doctor);
 
         List<DoctorTranslation> translations = dto.getTranslations().stream()
-                .map(t -> new DoctorTranslation(null, savedDoctor, t.getLanguageCode(), t.getDescription(), t.getEducation(), t.getExperience(), t.getSpecialization()))
+                .map(t -> new DoctorTranslation(null, savedDoctor, t.getLanguageCode(), t.getDescription(), t.getEducation(), t.getExperience(), t.getServiceRecord(), t.getSpecialization()))
                 .toList();
 
         translationRepository.saveAll(translations);
@@ -90,6 +90,7 @@ public class DoctorServiceImpl implements DoctorService {
                 translation.setDescription(translationDto.getDescription());
                 translation.setEducation(translationDto.getEducation());
                 translation.setExperience(translationDto.getExperience());
+                translation.setServiceRecord(translationDto.getServiceRecord());
                 translation.setSpecialization(translationDto.getSpecialization());
             } else {
                 translation = new DoctorTranslation();
@@ -98,6 +99,7 @@ public class DoctorServiceImpl implements DoctorService {
                 translation.setDescription(translationDto.getDescription());
                 translation.setEducation(translationDto.getEducation());
                 translation.setExperience(translationDto.getExperience());
+                translation.setServiceRecord(translationDto.getServiceRecord());
                 translation.setSpecialization(translationDto.getSpecialization());
                 doctor.getTranslations().add(translation);
             }
