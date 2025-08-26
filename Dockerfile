@@ -1,45 +1,43 @@
-# Multi-stage build для оптимизации размера образа
-FROM eclipse-temurin:17-jdk-alpine AS builder
+# Stage 1: Build stage
+FROM maven:3.9-openjdk-17-slim AS build
 
-# Установка рабочей директории
+# Set working directory
 WORKDIR /app
 
-# Копирование файлов Maven
+# Copy pom.xml first for better Docker layer caching
 COPY pom.xml .
-COPY mvnw .
-COPY mvnw.cmd .
-COPY .mvn .mvn
 
-# Копирование исходного кода
-COPY src src
+# Download dependencies (this layer will be cached if pom.xml doesn't change)
+RUN mvn dependency:go-offline -B
 
-# Сборка приложения
-RUN chmod +x mvnw
-RUN ./mvnw clean package -DskipTests
+# Copy source code
+COPY src ./src
 
-# Production stage
-FROM eclipse-temurin:17-jre-alpine
+# Build the application
+RUN mvn clean package -DskipTests -B
 
-# Создание пользователя для безопасности
-RUN addgroup -S spring && adduser -S spring -G spring
+# Stage 2: Production stage
+FROM openjdk:17-jre-slim AS production
 
-# Установка рабочей директории
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Set working directory
 WORKDIR /app
 
-# Копирование jar файла из builder stage
-COPY --from=builder /app/target/nuraimed-back-*.jar app.jar
+# Copy the built JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Изменение владельца файлов
-RUN chown spring:spring app.jar
+# Change ownership to non-root user
+RUN chown -R appuser:appuser /app
+USER appuser
 
-# Переключение на пользователя spring
-USER spring
-
-# Открытие порта
+# Expose port (adjust as needed)
 EXPOSE 8080
 
-# Настройка JVM для контейнера
-ENV JAVA_OPTS="-Xmx512m -Xms256m"
+# Health check (optional - adjust endpoint as needed)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
 
-# Запуск приложения
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-Xmx512m", "-Xms256m", "-jar", "app.jar"]

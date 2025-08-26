@@ -6,7 +6,7 @@ spring:
   application:
     name: nuraimed-back
   datasource:
-    url: jdbc:postgresql://localhost:5433/nuraimed-db
+    url: jdbc:postgresql://${POSTGRES_ADDRESS}:${POSTGRES_ADDRESS_PORT}/${POSTGRES_DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
   liquibase:
